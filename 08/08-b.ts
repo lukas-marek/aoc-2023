@@ -21,18 +21,18 @@ const createNodeMap = (nodes: Node[]): NodeMap => {
     return map
 }
 
-const walk = (directions: string[], nodeMap: NodeMap): number => {
-    let currentNodes = [...nodeMap.keys()].filter(key => key.endsWith("A"))
-    let steps: number = 0
+const walk = (start: string, directions: string[], nodeMap: NodeMap): string[] => {
+    let currentNode = start
+    let steps: string[] = []
 
-    while (!currentNodes.every(key => key.endsWith("Z"))) {
-        const direction = directions[steps % directions.length]
-        currentNodes = currentNodes.map(node => direction == "L" ? nodeMap.get(node)!.left : nodeMap.get(node)!.right)
-        steps++
-        if (steps % 1000000 == 0) {
-            console.log(steps, currentNodes)
-        }
-    }
+    do {
+        const i = steps.length
+        steps.push(currentNode)
+        currentNode = directions[i % directions.length] == "L" ? nodeMap.get(currentNode)!.left : nodeMap.get(currentNode)!.right
+    } while (!currentNode.endsWith("Z"))
+
+    steps.shift()
+    steps.push(currentNode)
 
     return steps
 }
@@ -47,6 +47,12 @@ const nodes = nodesInput.split('\n')
 
 const nodeMap = createNodeMap(nodes)
 
-const steps = walk(directions, nodeMap)
+const startNodes = [...nodeMap.keys()].filter(node => node.endsWith("A"))
 
-console.log(steps)
+const firstPaths = startNodes.map(node => walk(node, directions, nodeMap))
+const cycles = firstPaths.map(n => walk(n[n.length - 1], directions, nodeMap))
+
+const startLens = firstPaths.map(firstPaths => firstPaths.length)
+const cyclesLen = cycles.map(cycle => cycle.length)
+
+console.log(startLens, cyclesLen)
